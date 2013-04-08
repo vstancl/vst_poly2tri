@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <cstdlib>
-#include <GL/glfw.h>
+#include <glfw.h>
 #include <time.h>
 #include <fstream>
 #include <string>

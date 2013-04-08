@@ -20,34 +20,65 @@
 # TODO:
 # Allow the user to select to link to a shared library or to a static library.
 
-#Search for the include file...
-FIND_PATH(GLFW_INCLUDE_DIRS GL/glfw.h DOC "Path to GLFW include directory."
-  HINTS
-  $ENV{GLFW_ROOT}
-  PATH_SUFFIX include #For finding the include file under the root of the glfw expanded archive, typically on Windows.
-  PATHS
-  /usr/include/
-  /usr/local/include/
-  # By default headers are under GL subfolder
-  /usr/include/GL
-  /usr/local/include/GL
-  ${GLFW_ROOT_DIR}/include/ # added by ptr
- 
-)
+IF (GLFW_INCLUDE_DIR)
+  # Already in cache, be silent
+  SET(GLFW_FIND_QUIETLY TRUE)
+ENDIF (GLFW_INCLUDE_DIR)
 
-FIND_LIBRARY(GLFW_LIBRARIES DOC "Absolute path to GLFW library."
-  NAMES glfw GLFW.lib
-  HINTS
-  $ENV{GLFW_ROOT}
-  PATH_SUFFIXES lib/win32 #For finding the library file under the root of the glfw expanded archive, typically on Windows.
-  PATHS
-  /usr/local/lib
-  /usr/lib
-  ${GLFW_ROOT_DIR}/lib-msvc100/release # added by ptr
-)
+if( WIN32 )
+   if( MSVC80 )
+       set( COMPILER_PATH "C:/Program\ Files/Microsoft\ Visual\ Studio\ 8/VC" )
+   endif( MSVC80 )
+   if( MSVC71 )
+       set( COMPILER_PATH "C:/Program\ Files/Microsoft\ Visual\ Studio\ .NET\ 2003/Vc7" )
+   endif( MSVC71 )
+   FIND_PATH( GLFW_INCLUDE_DIR gl/GLFW.h gl/wGLFW.h
+              PATHS
+              "${TRIDIM_3RDPARTY_DIR}/include"
+              ${COMPILER_PATH}/PlatformSDK/Include
+              )
+   SET( GLFW_NAMES GLFW32 )
+   FIND_LIBRARY( GLFW_LIBRARY
+                 NAMES ${GLFW_NAMES}
+                 PATHS
+                 "${TRIDIM_3RDPARTY_DIR}/lib"
+                 ${COMPILER_PATH}/PlatformSDK/Lib
+                 )
+else( WIN32 )
+   FIND_PATH( GLFW_INCLUDE_DIR GLFW.h wGLFW.h
+              PATHS
+              "${TRIDIM_3RDPARTY_DIR}/include"
+              /usr/local/include
+              /usr/include
+              /opt/local/include
+              /opt/include
+              PATH_SUFFIXES gl/ GL/
+              )
+   SET( GLFW_NAMES GLFW GLFW )
+   FIND_LIBRARY( GLFW_LIBRARY
+                 NAMES ${GLFW_NAMES}
+                 PATHS
+                 "${TRIDIM_3RDPARTY_DIR}/lib"
+                 /usr/lib
+                 /usr/local/lib
+                 /opt/lib
+                 /opt/local/lib
+                 )
+endif( WIN32 )
 
-SET(GLFW_FOUND 0)
-IF(GLFW_LIBRARY AND GLFW_INCLUDE_DIR)
-  SET(GLFW_FOUND 1)
-  message(STATUS "GLFW found!")
-ENDIF(GLFW_LIBRARY AND GLFW_INCLUDE_DIR)
+GET_FILENAME_COMPONENT( GLFW_LIBRARY_DIR ${GLFW_LIBRARY} PATH )
+
+IF (GLFW_INCLUDE_DIR AND GLFW_LIBRARY)
+   SET(GLFW_FOUND TRUE)
+    SET( GLFW_LIBRARY_DIR ${GLFW_LIBRARY} )
+ELSE (GLFW_INCLUDE_DIR AND GLFW_LIBRARY)
+   SET( GLFW_FOUND FALSE )
+   SET( GLFW_LIBRARY_DIR )
+ENDIF (GLFW_INCLUDE_DIR AND GLFW_LIBRARY)
+
+MARK_AS_ADVANCED(
+  GLFW_LIBRARY
+  GLFW_INCLUDE_DIR
+)  
+
+
